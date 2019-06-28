@@ -1,0 +1,85 @@
+ALL WITH NGINX
+
+####WORDPRESS
+server{
+listen 80;
+index index.php index.html index.htm;
+server_name client1.leon36.web.id; 
+root /var/www/html/client1;
+
+location / {
+try_files $uri $uri/ /index.php?$args;
+proxy_headers_hash_max_size 512;
+proxy_headers_hash_bucket_size 64;
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+add_header Front-End-Https on;
+# whatever the IP of your cloud server is
+#proxy_pass http://117.53.44.123:1080;
+}
+location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass unix:/run/php-fpm/www.sock;
+        fastcgi_index   index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass unix:/run/php-fpm/www.sock;
+        fastcgi_index   index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires max;
+        log_not_found off;
+    }
+}
+   
+
+
+
+
+
+############ MULTIPLE PHP
+
+server {
+        listen 80;
+        server_name wp56.leon36.web.id;
+
+        root   /var/www/html/client2/;
+        index index.php index.html index.htm;
+
+        #charset koi8-r;
+        access_log /var/log/nginx/wp56/wp56_access_log;
+        error_log   /var/log/nginx/wp56/wp56_error_log_error;
+
+       location / {
+                try_files $uri $uri/ /index.php?$query_string;
+        }
+
+       # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        location ~ \.php$ {
+
+                root    /var/www/html/client2/;
+                fastcgi_pass   127.0.0.1:9056;	#set port for php-fpm to listen on
+                fastcgi_index  index.php;
+                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+                include         fastcgi_params;
+                include /etc/nginx/fastcgi_params;
+
+        }
+}
+
+
+
+
+
+
+
+   

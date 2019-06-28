@@ -1,0 +1,141 @@
+##LAB DNS SERVER
+#Pre-requirement
+PASTIKAN DOMAIN SUDAH TEREKAT PADA IP PUBLIK !!
+OS: Centos7
+hostname: leon36.web.id
+IP: 117.53.44.123
+
+#Konfigurasi Master
+1. Install bind
+yum install bind bind-utils caching-nameserver -y
+
+2.modif file named.conf
+options {
+	listen-on port 53 { 127.0.0.1; 117.53.44.123;};
+	listen-on-v6 port 53 { ::1; };
+	directory 	"/var/named";
+	dump-file 	"/var/named/data/cache_dump.db";
+	statistics-file "/var/named/data/named_stats.txt";
+	memstatistics-file "/var/named/data/named_mem_stats.txt";
+	recursing-file  "/var/named/data/named.recursing";
+	secroots-file   "/var/named/data/named.secroots";
+	allow-query     { localhost; 117.53.44.123; any;};
+	allow-query-cache { localhost; 117.53.44.123; any;};
+
+	/* 
+	 - If you are building an AUTHORITATIVE DNS server, do NOT enable recursion.
+	 - If you are building a RECURSIVE (caching) DNS server, you need to enable 
+	   recursion. 
+	 - If your recursive DNS server has a public IP address, you MUST enable access 
+	   control to limit queries to your legitimate users. Failing to do so will
+	   cause your server to become part of large scale DNS amplification 
+	   attacks. Implementing BCP38 within your network would greatly
+	   reduce such attack surface 
+	*/
+	recursion yes;
+
+	dnssec-enable yes;
+	dnssec-validation yes;
+
+	/* Path to ISC DLV key */
+	bindkeys-file "/etc/named.iscdlv.key";
+
+	managed-keys-directory "/var/named/dynamic";
+
+	pid-file "/run/named/named.pid";
+	session-keyfile "/run/named/session.key";
+};
+
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+zone "leon36.web.id" {
+                type master;
+                file "/etc/named/leon36.web.id.zone";
+                };
+
+zone "44.53.117.in-addr.arpa" IN {
+        type master;
+        file "/etc/named/leon36.web.id.rev";
+        allow-update { none; };
+        };
+
+A> Screenshot
+
+3. buat zone forward
+vim /etc/named/leon36.web.id.zone
+................
+$TTL    86400
+@	IN	SOA	 leon36.web.id. root.leon36.web.id.(
+                               2008111914	;Serial
+                                3600            ;Refresh
+                                1800            ;Retry
+                                604800          ;Expire
+                                86400           ;Minimum TTL
+)
+
+@                               IN	NS	ns1.leon36.web.id.
+@                               IN	NS	ns2.leon36.web.id.
+@                               IN	A	117.53.44.123
+ns1                             IN	A	117.53.44.123
+ns2                             IN	A	117.53.44.123
+...................
+B> Screenshot
+
+4. buat zone reverse
+vim /etc/named/leon36.web.id.rev
+...................
+$TTL    86400
+@               IN SOA          leon36.web.id. root.leon36.web.id. (
+                2008111914	;Serial
+                3600            ;Refresh
+                1800            ;Retry
+                604800          ;Expire
+                86400           ;Minimum TTL
+)
+
+                IN NS            ns1.leon36.web.id.
+                IN NS            ns2.leon36.web.id.
+123              IN PTR          leon36.web.id.
+.....................
+C> Screenshot
+
+5. Restart service Named
+service named restart
+
+D> Screenshot
+
+6. set resolv
+vim /etc/resolv.conf
+.........
+nameserver 117.53.44.123
+search leon36.web.id
+........
+E> Screenshot
+
+7. Verifikasi forward domain
+nslookup leon36.web.id && nslookup 117.53.44.123
+
+F> Screenshot
+
+8. Verifikasi pointer domain
+host 117.53.44.123
+
+G> Screenshot
+
+9. Verifikasi menggunakan dig
+dig leon36.web.id
+
+H> Screenshot
+
+10. Verifikasi ping dari client
+ping leon36.web.id
+
+I> Screenshot
+
+Ket: https://acenk90.wordpress.com/2013/09/03/konfigurasi-dns-server-menggunakan-linux-centos/
+
+

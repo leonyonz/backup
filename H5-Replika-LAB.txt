@@ -1,0 +1,30 @@
+vim /etc/yum.repos.d/mariadb.repo
+
+yum -y install mariadb-server
+systemctl start mariadb
+systemctl enable mariadb
+
+##Master
+vim /etc/my.cnf
+..........
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+symbolic-links=0
+server-id = 1
+expire_logs_days = 14
+log_bin 
+log-basename=master
+binlog-ignore-db = information_schema
+binlog-ignore-db = mysql
+binlog-ignore-db = performance_schema
+binlog-ignore-db = test
+symbolic-links=0
+
+[mysqld_safe]
+log-error=/var/log/mariadb/mariadb.log
+pid-file=/var/run/mariadb/mariadb.pid
+.................
+
+mysqldump --all-database -u root -p > master.sql
+

@@ -1,0 +1,250 @@
+##Multiple PHP on Apache
+#Pre-requirement
+Client1
+OS: Centos7
+IP: 117.53.44.123
+domain: client1.leon36.web.id
+apache2
+php5.6
+
+Client2
+OS: Centos7
+IP: 117.53.44.123
+domain: clieent2.leon36.web.id
+apache2
+php7.1
+
+WordPress
+OS: Centos7
+IP: 117.53.44.123
+domain: leon36.web.id
+apache2
+php7.3
+
+#Configure Bind
+vim /etc/named/leon36.web.id.zone
+..............
+client1 IN A 117.53.44.123
+client2 IN A 117.53.44.123
+..........
+systemctl restart named
+
+#STEP
+1. Install php5.6 & php7.1
+yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+yum install php71-php-fpm php56-php-fpm php56 php71 mod_fcgid -y
+systemctl start php71-php-fpm
+systemctl enable php71-php-fpm
+systemctl start php56-php-fpm
+systemctl enable php56-php-fpm
+
+2. Stop service php-fpm
+systemctl stop php56-php-fpm
+systemctl stop php71-php-fpm
+
+3. Change listen port php-fpm
+sed -i 's/:9000/:9056/' /etc/opt/remi/php56/php-fpm.d/www.conf
+sed -i 's/:9000/:9072/' /etc/opt/remi/php71/php-fpm.d/www.conf
+
+A> Screenshot hasil cat
+
+4. Start service php-fpm
+systemctl start php71-php-fpm
+systemctl start php56-php-fpm
+
+5. Setup fastCGI Handler
+vim /var/www/cgi-bin/php.fastcgi
+.........
+#!/bin/bash
+
+PHPRC="/etc/php.ini"
+PHP_FCGI_CHILDREN=4
+PHP_FCGI_MAX_REQUESTS=1000
+export PHPRC
+export PHP_FCGI_CHILDREN
+export PHP_FCGI_MAX_REQUESTS
+exec /usr/bin/php-cgi
+..........
+
+B> Screenshot
+
+6. Change ownership & permission on php.fastcgi
+chown apache:apache /var/www/cgi-bin/php.fastcgi
+chmod +x /var/www/cgi-bin/php.fastcg
+
+7. Configure php56.fcgi & php71.fcgi
+cat > /var/www/cgi-bin/php56.fcgi << EOF
+#!/bin/bash
+exec /bin/php56-cgi
+EOF
+sudo chmod 755 /var/www/cgi-bin/php56.fcgi
+
+cat > /var/www/cgi-bin/php71.fcgi << EOF
+#!/bin/bash
+exec /bin/php71-cgi
+EOF
+sudo chmod 755 /var/www/cgi-bin/php71.fcgi
+
+C> Screenshot hasil cat
+
+8. add handler in php.conf
+vim /etc/httpd/conf.d/php.conf
+...............
+Action php56-fcgi /cgi-bin/php56.fcgi
+Action php71-fcgi /cgi-bin/php71.fcgi
+
+<Directory /var/www/html/client1>
+    DirectoryIndex index.php
+    AllowOverride all
+    SetHandler "proxy:fcgi://127.0.0.1:9056"
+    Require all granted
+</Directory>
+<Directory /var/www/html/client2>
+    DirectoryIndex index.php
+    AllowOverride all
+    SetHandler "proxy:fcgi://127.0.0.1:9072"
+    Require all granted
+</Directory>
+..................
+
+D> Screenshot
+
+9. create virtualhost for client1
+mkdir /etc/httpd/sites-available
+mkdir /etc/httpd/sites-enabled
+echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
+vim /etc/httpd/sites-available/client1.leon36.web.id.conf
+.............
+<VirtualHost *:80>
+ServerAdmin admin@leon36.web.id
+ServerName www.client1.leon36.web.id
+ServerAlias client1.leon36.web.id
+DocumentRoot /var/www/html/client1
+  <Directory /var/www/html/client1>
+      Options FollowSymLinks
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/client1.leon36.web.id_error.log
+CustomLog /var/log/httpd/client1.leon36.web.id_access.log combined
+</VirtualHost>
+...............
+E> Screenshoot
+
+vim /etc/httpd/conf.d/php.conf
+...........
+<Directory /var/www/html/client1>
+    DirectoryIndex index.php
+    AllowOverride all
+<FilesMatch \.(php|phar)$>
+#SetHandler php71-fastcgi
+SetHandler "proxy:fcgi://127.0.0.1:9072"
+</FilesMatch>
+Require all granted
+</Directory>
+..............
+######INSTALL WORDPRESS#########
+dbname:wordpress_db1
+dbuser:wpuser1
+dppass:s
+sitename: client1blog
+user:admin
+Pass:admin
+
+
+10. create virtualhost for client2
+vim /etc/httpd/sites-available/client2.leon36.web.id.conf
+...............
+<VirtualHost *:80>
+ServerAdmin admin@leon36.web.id
+ServerName www.client2.leon36.web.id
+ServerAlias client2.leon36.web.id
+DocumentRoot /var/www/html/client2
+  <Directory /var/www/html/client2>
+   <FilesMatch \.(php|phar)$>
+        SetHandler application/x-httpd-php  #DEFAULT SUDAH PHP7.3
+   </FilesMatch>
+      Options FollowSymLinks
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/client2.leon36.web.id_error.log
+CustomLog /var/log/httpd/client2.leon36.web.id_access.log combined
+</VirtualHost>
+..................
+F> Screenshot
+
+##INSTALL JOOMLA
+mysql -u root
+CREATE DATABASE joomla_db;
+GRANT ALL PRIVILEGES ON joomla_db.* TO 'joomlauser'@'localhost' IDENTIFIED BY 's';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+wget https://downloads.joomla.org/cms/joomla3/3-9-8/Joomla_3-9-8-Stable-Full_Package.tar.gz?format=gz
+mv Joomla_3-9-8-Stable-Full_Package.tar.gz?format=gz /var/www/html/client2/Joomla_3-9-8-Stable-Full_Package.tar.gz
+cd /var/www/html/client2
+tar xfvz Joomla_3-9-8-Stable-Full_Package.tar.gz
+chmod -R apache:apache /var/www/html/client2
+chown -R 755 /var/www/html/client2
+
+##Lanjut Install joomla
+name site: client2-blog
+user:admin
+pass:admin
+email:leon@isi.co.id
+db:joomla_db
+user:joomlauser
+passdb:s
+
+#########
+11. Create virtualhost for wordpress
+vim /etc/httpd/sites-available/leon36.web.id.conf
+..................
+ServerAdmin admin@leon36.web.id
+ServerName leon36.web.id
+ServerAlias www.leon36.web.id
+DocumentRoot /var/www/html/wordpress
+  <Directory /var/www/html/wordpress>
+      Options FollowSymLinks
+      AllowOverride All
+      Require all granted
+   <FilesMatch \.(php|phar)$>
+        SetHandler application/x-httpd-php
+   </FilesMatch>
+
+  </Directory>
+ErrorLog /var/log/httpd/leon36.web.id_error.log
+CustomLog /var/log/httpd/leon36.web.id_access.log combined
+</VirtualHost>
+..................
+G> Screenshot
+
+12. Disable default php-handler
+vim /etc/httpd/conf.d/php.conf
+.............
+<IfModule  mod_php7.c>
+    #
+    # Cause the PHP interpreter to handle files with a .php extension.
+    #
+#    <FilesMatch \.(php|phar)$>
+#        SetHandler application/x-httpd-php
+#    </FilesMatch>
+..............
+
+H>Screenshot
+
+13. create info.php
+mkdir /var/www/html/client1
+mkdir /var/www/html/client2
+echo "<?php phpinfo(); ?>" >> /var/www/html/client1
+echo "<?php phpinfo(); ?>" >> /var/www/html/client2
+
+14. restart httpd
+systemctl restart httpd
+
+15. verifikasi
+I>Screenshot
+
+

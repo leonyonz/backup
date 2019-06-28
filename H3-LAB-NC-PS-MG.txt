@@ -1,0 +1,234 @@
+######## LAB Reverse PROXY ##############
+Pre-requirement
+web1.leon36.web.id as nextcloud
+web2.leon36.web.id as Magento
+php7.1 - php7.2
+composer
+mariadb-10
+apache2
+nginx
+
+######NEXTCLOUD#########
+1.install php
+yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm yum-utils -y
+yum-config-manager --enable remi-php71
+yum -y install php php-common php-opcache php-mcrypt php-cli php-gd php-curl php-mysqlnd  php-dom  php-curl  php-zip  php-mbstring  php-xml  php-xmlreader  php-simplexml php-bcmath php-soap php-amqplib
+
+2. install apache2
+yum -y install httpd
+
+3. install mariadb-10
+vim /etc/yum.repos.d/mariadb.repo
+........
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+........
+
+yum update -y
+yum install -y mariadb-server
+systemctl start mariadb && systemctl enable mariadb
+
+###############NOTED##############
+###CHANGE LISTEN PORT FOR HTTPD###
+##################################
+# vim /etc/httpd/conf/httpd.conf #
+# listen 80 -> listen 1080	 #
+##################################
+
+
+4. create dir sites-available & sites-enabled
+mkdir /etc/httpd/sites-available
+mkdir /etc/httpd/sites-enabled
+
+5. add sites-enabled directory to configuration
+echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
+
+6. Create nextcloud db
+mysql -u root -p
+create database nextcloud;
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 'sFXasd@sa';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+7. download nextcloud
+wget https://download.nextcloud.com/server/releases/nextcloud-14.0.4.zip
+unzip nextcloud-14.0.4.zip
+mv nextcloud /var/www/html/web1
+
+8. change ownership & permission
+chmod -R 755 /var/www/html/web1
+chown -R apache:apache /var/www/html/web1
+
+9. create virtualhost for nextcloud
+vim /etc/httpd/sites-available/web1.leon36.web.id.conf
+......................
+<VirtualHost *:1080>
+ServerAdmin admin@leon36.web.id
+ServerName web1.leon36.web.id
+ServerAlias web1.leon36.web.id
+DocumentRoot /var/www/html/web1/
+  <Directory /var/www/html/>
+      Options FollowSymLinks #cari fungsi
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/web1.leon36.web.id_error.log
+CustomLog /var/log/httpd/web1.leon36.web.id_access.log combined
+</VirtualHost>
+.........................
+ln -s /etc/httpd/sites-available/web1.leon36.web.id.conf /etc/httpd/sites-enabled/
+apachectl reload
+
+10. Install nextcloud
+user:admin
+pass:admin
+choose mariadb/sql
+dbname:nextcloud
+dbuser:nextcloud
+dbpass:sFXasd@sa
+dbhost:localhost
+
+11. install nginx
+yum -y install nginx
+
+12. start & enable service
+systemctl start nginx
+systemctl enable nginx
+
+13. create dir sites-available & sites-enabled
+mkdir /etc/nginx/sites-available
+mkdir /etc/nginx/sites-enabled
+
+14. include sites-enabled configuration to default conf nginx
+vim /etc/nginx/nginx.conf
+.....
+#in section http
+http{
+......
+include /etc/nginx/sites-enabled/*;
+}
+.....
+
+15. create reverse proxy configuration
+vim /etc/nginx/sites-available/proxy1
+........
+server{
+listen 80;
+index index.php index.html index.htm;
+server_name web1.leon36.web.id; 
+root /var/www/html/web1;
+location / {
+proxy_headers_hash_max_size 512;
+proxy_headers_hash_bucket_size 64;
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+add_header Front-End-Https on;
+# whatever the IP of your cloud server is
+proxy_pass http://117.53.44.123:1080;
+}
+}s
+..............
+ln -s /etc/nginx/sites-available/proxy1 /etc/nginx/sites-enabled/
+
+16. edit file /nextcloud-path/config/config.php
+vim config.php
+.................
+#add trust domain to array
+1=> web1.leon36.web.id
+................
+
+17. restart all webserver service
+nginx -s reload
+apachetl reload
+
+##########MAGENTO##########
+1. Install composer
+yum -y install composer
+
+2. create magento db
+mysql -u root -p
+create database magento;
+GRANT ALL PRIVILEGES ON magento.* TO 'magento'@'localhost' IDENTIFIED BY 'aaas#$!@sasds';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+3. download Magento
+wget https://github.com/magento/magento2/archive/2.3.0.tar.gz
+tar xfzv 2.3.0.tar.gz 
+mv magento2-2.3.0 web2
+mv web2 /var/www/html
+
+4. change ownership & permission
+chmod -R 755 /var/www/html/web2
+chown -R apache:apache /var/www/html/web2
+
+5. create virtualhost for magento
+vim /etc/httpd/sites-available/web2.leon36.web.id.conf
+.................
+<VirtualHost *:1080>
+ServerAdmin admin@leon36.web.id
+ServerName web2.leon36.web.id
+ServerAlias www.web2.leon36.web.id
+DocumentRoot /var/www/html/web2
+  <Directory /var/www/html/>
+      Options FollowSymLinks #cari fungsi
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/web2.leon36.web.id_error.log
+CustomLog /var/log/httpd/web2.leon36.web.id_access.log combined
+</VirtualHost>
+.....................
+ln -s /etc/httpd/sites-available/web2.leon36.web.id.conf /etc/httpd/sites-enabled/
+apachectl reload
+
+6. run composer
+cd /var/www/html/web2
+composer install
+
+7. create reverse proxy configuration
+vim /etc/nginx/sites-available/proxy2
+........
+server{
+listen 80;
+index index.php index.html index.htm;
+server_name web2.leon36.web.id; 
+root /var/www/html/web2;
+location / {
+proxy_headers_hash_max_size 512;
+proxy_headers_hash_bucket_size 64;
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+add_header Front-End-Https on;
+# whatever the IP of your cloud server is
+proxy_pass http://117.53.44.123:1080;
+}
+}
+...............
+ln -s /etc/nginx/sites-available/proxy2 /etc/nginx/sites-enabled/
+
+8. install magento using http://web2.leon36.web.id
+username:admin
+password:7913006cuz
+dbname:magento
+dbuser:magento
+dbpass:aaas#$!@sasds
+dbhost:localhost
+table_prefix: mg_
+
+
+
+
+
+
+
+

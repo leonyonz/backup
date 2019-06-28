@@ -1,0 +1,42 @@
+##infinys
+1. penyedia layanan berbasis cloud,
+2. tujuan selalu memberikan layanan yang dapat mengubah persepsi khalayak luas tentang bagaimana cara pandang mereka dalam menggunakan Teknologi Informasi terbaru.
+3. berdiri pada tahun 2007 dengan nama infinysystem
+4. pada tahun 2008 meluncurkan PUSH yang berfungsi untuk mengirimkan pesan push ke perangkat selular
+5. pada tahun 2010 meluncurkan infinyscloud yaitu sebuah IaaS berbasis linux.
+6. pada tahun 2013 meluncurkan cloudkilat yang bertujuan untuk menyediakan layanan cloud yang terjangkau terhadap segmen pasar UKM & startup
+7. pada tahun 2017 perusahaan ini berganti nama menjadi infinys (the true cloud company)
+
+##cloudkilat
+1. penyedia layanan cloud yang cepat dan terjangkau.
+2. Layanan Infrastruktur: KilatVM 2.0, Kilat Storage, Kilat Plesk.
+- KilatVM 2.0: VPS, SSD, Intel Xeon, Virtualisasi KVM
+- Kilat Storage: penyimpanan objek, menggunakan protokol S3 (simple storage service) 
+- Kilat Plesk: VPS, sudah dilengkapi control panel (plesk)
+3. layanan platform: Kilat Hosting, Kilat Iron
+- kilat hosting: web hosting, multi node service, dedicated firewall
+- kilat iron: PaaS, support Rubby, Node.Js, Git, SVN, Docker
+4. layanan tambahan: Pengelolaan, lisensi kontrol panel, sertifikat SSL
+
+##Domaim.cloud
+1. cek ketersediaan domain
+2. cek pemilik domain
+3. transfer domain
+
+##IaaS (Infrastruture as a Service)
+1. Penyedia layanan infrastruktur berupa VM & Storage.
+2. Kilatvm, kilat storage, kilat plesk, CloudOpen, CloudWin, azure
+
+#PaaS (Platform as a Service)
+1. Penyedia Layanan layanan berupa platform
+2. Kilat Iron
+
+##SaaS(Software as a Service)
+1. Penyedia layanan berupa software
+2. Domain Cloud, C2, GSuite, Office 365
+
+
+
+WEBSERVER
+
+tool yang digunakan untuk mengolah request HTTP/HTTPS dari client (browser) dan memberikan balasan berupa halaman sebuah website yang mencakup file, gambar, audio, video, dll

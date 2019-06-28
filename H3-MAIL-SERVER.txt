@@ -1,0 +1,53 @@
+pada sebuah agent ada 3 komponen:
+-MTA yaitu komponen yg bertangungjawab terhadap pengiriman pesan (mengirim & menerima).
+Fungsi sebagai sender: sebagai pengangkut email menuju server penerima 
+fungsi sebagai receiver: menerima email dan meneruskannya ke server tujuan
+tool: sendmail, postfix
+
+-MDA yaitu komponen yang bertanggungjawab terhadap pengarsipan email yg diterima (POP3 & IMAP)
+fungsi: menyimpan pesan yg diterima hingga benar benar dibaca oleh penerima
+tool: procmail
+
+-MUA komponen yg bertanggungjawab terhadap antarmuka mailserver, mudahnya tool untuk membuka, membuat, & mengirim email.
+fungsi: sebagai interface untuk berinteraksi dengan MTA dan MDA
+tool: outlook, thunderbird
+
+#Alur Kerja
+1. client menggunakan MUA untuk membuat email,
+2. saat client mengirimkan pesan melalui interface MUA, MTA menjalankan tugas sebagai pembawa pesan.
+3. pesan yg dikirimkan menggunakan SMTP untuk berkomonukasi dengan server tujuan.
+4. pesan yang diterima akan di tampung oleh MDA dalam hal ini terdapat 2 jenis pesan yaitu POP3 dan IMAP.
+5. untuk membaca pesan, penerima menggunakan MUA untuk membuka pesan tersebut.
+6. saat penerima akan membalas pesan, alur kembali ke proses pertama.
+
+SMTP: protokol yang digunakan untuk mengirimkan pesan portnya 25
+IMAP: Protokol pesan yang digunakan untuk pengorganisiran pesan (membaca, menghapus, memindahkan pesan) setiap yg menggunakan protok ini akan disimpan pada server portnya 143
+POP3: Protokol pesan, seperti IMAP, tapi digunakan untuk mengambil pesan saja, setiap pesan yg sudah diambil tidak akan disimpan diserver portnya 110
+
+Record MX digunakan untuk routing email, lalu priority digunakan ketika terdapat lebih dari satu record email masuk, nilai priority terendah akan didahulukan.
+record SPF digunakan untuk perijinan penggunakan nama domain dalam mengirim pesan
+record DKIM digunakan untuk validasi penerima pesan menggunakan key (public & private key)
+
+### Pre-requirement
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

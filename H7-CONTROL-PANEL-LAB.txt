@@ -1,0 +1,6 @@
+INSTALL CPANEL
+1. ZPanel
+2. CWP
+
+### 
+1. Pastikan kalo fresh OS 

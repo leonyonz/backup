@@ -1,0 +1,187 @@
+### LAB NextCloud | Prestashop | Magento
+Pre-requirement
+client1.leon36.web.id as nextcloud
+client2.leon36.web.id as Prestashop
+client3.leon36.web.id as Magento
+php7.1 - php7.2
+composer
+mariadb-10
+apache2
+
+######NEXTCLOUD##############
+1.install php
+yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+yum-config-manager --enable remi-php72
+yum -y install php php-intl php-common php-opcache php-mcrypt php-cli php-gd php-curl php-mysqlnd  php-dom  php-curl  php-zip  php-mbstring  php-xml  php-xmlreader  php-simplexml php-bcmath php-soap php-amqplib
+
+2. install apache2
+yum -y install httpd
+
+3. install mariadb-10
+vim /etc/yum.repos.d/mariadb.repo
+........
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+........
+
+yum update -y
+yum install -y mariadb-server
+systemctl start mariadb && systemctl enable mariadb
+
+4. create dir sites-available & sites-enabled
+mkdir /etc/httpd/sites-available
+mkdir /etc/httpd/sites-enabled
+
+5. add sites-enabled directory to configuration
+echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
+
+6. Create nextcloud db
+mysql -u root -p
+create database nextcloud;
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 's';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+7. download nextcloud
+wget https://download.nextcloud.com/server/releases/nextcloud-14.0.4.zip
+unzip nextcloud-14.0.4.zip
+mv nextcloud /var/www/html/client1
+
+8. change ownership & permission
+chmod -R 755 /var/www/html/client1
+chown -R apache:apache /var/www/html/client1
+
+9. create virtualhost for nextcloud
+vim /etc/httpd/sites-available/client1.leon36.web.id.conf
+.................
+<VirtualHost *:80>
+ServerAdmin admin@leon36.web.id
+ServerName client1.leon36.web.id
+ServerAlias www.client1.leon36.web.id
+DocumentRoot /var/www/html/client1/
+  <Directory /var/www/html/>
+      Options FollowSymLinks #cari fungsi
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/client1.leon36.web.id_error.log
+CustomLog /var/log/httpd/client1.leon36.web.id_access.log combined
+</VirtualHost>
+.....................
+ln -s /etc/httpd/sites-available/client1.leon36.web.id.conf /etc/httpd/sites-enabled/client1.leon36.web.id.conf
+
+10. Install nextcloud
+user:admin
+pass:admin
+choose mariadb/sql
+dbname:nextcloud
+dbuser:nextcloud
+dbpass:s
+dbhost:localhost
+
+#####Prestashop##########
+1. create prestashop db
+mysql -u root -p
+create database prestashop;
+GRANT ALL PRIVILEGES ON prestashop.* TO 'prestashop'@'localhost' IDENTIFIED BY 's';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+2. download prestashop
+wget https://download.prestashop.com/download/releases/prestashop_1.7.5.2.zip
+unzip prestashop_1.7.5.2.zip
+unzip prestashop.zip -d /var/www/html/client2
+
+3. change ownership & permission
+chmod -R 755 /var/www/html/client2
+chown -R apache:apache /var/www/html/client2
+
+4. create virtualhost for nextcloud
+vim /etc/httpd/sites-available/client2.leon36.web.id.conf
+.................
+<VirtualHost *:80>
+ServerAdmin admin@leon36.web.id
+ServerName client2.leon36.web.id
+ServerAlias www.client2.leon36.web.id
+DocumentRoot /var/www/html/client2
+  <Directory /var/www/html/>
+      Options FollowSymLinks #cari fungsi
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/client2.leon36.web.id_error.log
+CustomLog /var/log/httpd/client2.leon36.web.id_access.log combined
+</VirtualHost>
+.....................
+ln -s /etc/httpd/sites-available/client2.leon36.web.id.conf /etc/httpd/sites-enabled/client2.leon36.web.id.conf
+
+5. install prestashop
+name site: client2shop
+dbname:prestashop
+dbuser:prestashop
+dbpass:s
+dbhost:localhost
+table_prefix: ps_
+
+#########LAB MAGENTO###########
+1. Install composer
+yum -y install composer
+
+2. create prestashop db
+mysql -u root -p
+create database magento;
+GRANT ALL PRIVILEGES ON magento.* TO 'magento'@'localhost' IDENTIFIED BY 's';
+FLUSH PRIVILEGES;
+show databases;
+exit;
+
+3. download prestashop
+https://github.com/magento/magento2/archive/2.3.0.tar.gz
+tar xfzv 2.3.0.tar.gz -C /var/www/html/client3
+
+4. change ownership & permission
+chmod -R 755 /var/www/html/client3
+chown -R apache:apache /var/www/html/client3
+
+5. create virtualhost for nextcloud
+vim /etc/httpd/sites-available/client3.leon36.web.id.conf
+.................
+<VirtualHost *:80>
+ServerAdmin admin@leon36.web.id
+ServerName client3.leon36.web.id
+ServerAlias www.client3.leon36.web.id
+DocumentRoot /var/www/html/client3
+  <Directory /var/www/html/>
+      Options FollowSymLinks #cari fungsi
+      AllowOverride All
+      Require all granted
+  </Directory>
+ErrorLog /var/log/httpd/client3.leon36.web.id_error.log
+CustomLog /var/log/httpd/client3.leon36.web.id_access.log combined
+</VirtualHost>
+.....................
+ln -s /etc/httpd/sites-available/client3.leon36.web.id.conf /etc/httpd/sites-enabled/client2.leon36.web.id.conf
+
+6. run composer
+cd /var/www/html/client3
+composer install
+
+7. install magento
+username:admin
+password:7913006cuz
+dbname:magento
+dbuser:magento
+dbpass:s
+dbhost:localhost
+table_prefix: mg_
+
+
+
+
+
+

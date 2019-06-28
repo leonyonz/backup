@@ -1,0 +1,22 @@
+H7
+###CONTROL PANEL####
+Digunakan untuk mempermudah user dalam otomasi dan pengelolaan hosting mencakup file atau direktori, dns record, mailserver, dan databases pada sebuah website. menggunakan BUI. 
+
+BERBAYAR
+Cpanel merupakan sebuah kontrol panel web hosting untuk sistem operasi linux, panel ini sangat mudah digunakan apalagi untuk pemula. Agar dapat menggunakannya, sobat harus mengeluarkan biaya untuk membeli lisensinya, panel hosting ini memiliki tiga struktur pengguna antara lain : Administrator, reseller ( agent ) dan pengguna. panel ini bisa sobat pasang pada distro Linux diantaranya Debian ( Serta Turunannya ), Red Had ( Serta Turunannya ) dan FreeBSD. selain itu Cpanel juga bisa digunakan untuk hosting multi domain.
+
+Plesk juga merupakan kontrol panel hosting berbayar yang tersedia untuk digunakan pada sistem operasi Linux, FreeBSD dan juga Windows, panel ini juga sangat mudah digunakan dalam mengadministrasi sebuah server VPS, tetapi kekurangan dari kontrol panel ini dibandingkan dengan kontrol panel lainya adalah dari segi kecepatannya, hal ini dipengaruhi oleh banyak fitur yang disediakan pada kontrol panel Plesk. Plesk juga bisa digunakan untuk menampung file - file situs yang berbeda nama domainnya dengan cara menggunakan fitur virtual host
+
+ZPanel. Control panel ini juga ditulis dalam bahasa PHP murni sehingga dapat beroperasi dengan sangat baik pada Apache, PHP, dan MySQL. Selain itu, Zpanel juga mudah digunakan, tampilan antarmuka control panel ini juga tergolong sederhana. Hal itulah yang membuat banyak pengguna yang memilih control panel hosting Zpanel ini.
+
+FREE
+ISP Config adalah salah satu panel hosting yang bisa didapatkan dengan gratis. Panel VPS Linux yang satu ini sudah termasuk antara lain Apache, FTP, SQL, BIND DNS, Database dan Virtual Server, ISP Config juga mendukung aplikasi web server Nginx. Selain itu panel VPS Linux ini juga dilengkapi dengan fitur multilinguage.
+
+Webuzo adalah aplikasi control panel seperti cPanel, ISP Config, dan Plesk. Webuzo biasanya banyak digunakan pada Virtual Private Server atau yang biasa dikenal dengan sebutan VPS. Kelebihan Webuzo terletak pada tampilannya yang user friendly. Webuzo juga menyediakan script installer untuk memudahkan kamu menginstall CMS populer seperti WordPress dan Drupal.
+
+
+#PERBANDINGAN PLESK DAN CPANEL
+Plesk bisa di uninstall sendangkan cpanel harus install ulang server
+
+
+
